@@ -48,21 +48,29 @@ export default function App() {
   const [wishlistOpen, setWishlistOpen] = useState(false);
 
   useEffect(() => {
+    let timer;
     async function init() {
       setLoading(true);
       try {
-        const settings = await fetchSiteSettings();
+        // Add a timeout to the settings fetch so it doesn't hang the app
+        const settingsPromise = fetchSiteSettings();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 3000)
+        );
+        
+        const settings = await Promise.race([settingsPromise, timeoutPromise]);
         setSiteSettings(settings);
         if (settings?.dark_mode_enabled !== false) {
           document.documentElement.classList.add('dark');
         }
       } catch (err) {
-        console.error('Failed to load site settings:', err);
+        console.error('Failed to load site settings, using defaults:', err);
       } finally {
         setLoading(false);
       }
     }
     init();
+    return () => clearTimeout(timer);
   }, []);
 
   const handleCheckoutSuccess = () => {
