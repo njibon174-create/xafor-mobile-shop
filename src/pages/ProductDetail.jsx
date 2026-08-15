@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../utils/supabaseClient';
 import { useCart } from '../hooks/useCart';
 import { formatBDT, getDeliveryCharge, BANGLADESH_DIVISIONS } from '../utils/helpers';
+import ProductCard from '../components/ProductCard';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -22,6 +23,7 @@ export default function ProductDetail() {
   const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     async function loadProduct() {
       try {
         const [productRes, relatedRes] = await Promise.all([
@@ -34,15 +36,19 @@ export default function ProductDetail() {
             .order('rating', { ascending: false }),
         ]);
 
-        setProduct(productRes.data);
+        if (!isMounted) return;
+        setProduct(productRes.data || null);
         setRelatedProducts(relatedRes.data || []);
       } catch (err) {
         console.error('Error loading product:', err);
+        if (isMounted) setProduct(null);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }
+    setLoading(true);
     loadProduct();
+    return () => { isMounted = false; };
   }, [slug]);
 
   const handleAddToCart = () => {
@@ -53,8 +59,19 @@ export default function ProductDetail() {
     }
   };
 
-  const specs = product ? product.specifications : {};
-  const features = product ? (product.features || []) : [];
+  // Safe defaults so the render never throws on missing fields
+  const safeProduct = product || {};
+  const specs = safeProduct.specifications && typeof safeProduct.specifications === 'object'
+    ? safeProduct.specifications
+    : {};
+  const features = Array.isArray(safeProduct.features) ? safeProduct.features : [];
+  const rating = Number(safeProduct.rating) || 0;
+  const reviewCount = Number(safeProduct.review_count) || 0;
+  const price = Number(safeProduct.price) || 0;
+  const comparePrice = Number(safeProduct.compare_price) || 0;
+  const stock = Number(safeProduct.stock) || 0;
+  const imageUrl = safeProduct.image_url || 'https://via.placeholder.com/600x600';
+  const imageUrls = Array.isArray(safeProduct.image_urls) ? safeProduct.image_urls : [];
 
   if (loading) {
     return (
@@ -97,9 +114,9 @@ export default function ProductDetail() {
             Products
           </button>
           <span>/</span>
-          <span className="text-gray-600">{product.category_id ? 'Details' : ''}</span>
+          <span className="text-gray-600">Details</span>
           <span className="text-gray-600">/</span>
-          <span className="text-gray-500 truncate max-w-[200px] sm:max-w-none">{product.name}</span>
+          <span className="text-gray-500 truncate max-w-[200px] sm:max-w-none">{safeProduct.name}</span>
         </nav>
       </motion.div>
 
@@ -114,24 +131,24 @@ export default function ProductDetail() {
           >
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-900">
               <img
-                src={product.image_url || 'https://via.placeholder.com/600x600'}
-                alt={product.name}
+                src={imageUrl}
+                alt={safeProduct.name}
                 className="w-full h-full object-cover"
               />
-              {product.is_featured && (
+              {safeProduct.is_featured && (
                 <span className="absolute top-4 left-4 px-3 py-1 bg-white/10 backdrop-blur text-white text-xs font-medium rounded-full">
                   Featured
                 </span>
               )}
             </div>
-            {product.image_urls && product.image_urls.length > 0 && (
+            {imageUrls.length > 0 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
-                {product.image_urls.slice(0, 4).map((img, i) => (
+                {imageUrls.slice(0, 4).map((img, i) => (
                   <div
                     key={i}
                     className="w-20 h-20 rounded-lg overflow-hidden bg-gray-800 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                   >
-                    <img src={img} alt={`${product.name} view ${i + 1}`} className="w-full h-full object-cover" />
+                    <img src={img} alt={`${safeProduct.name} view ${i + 1}`} className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>
@@ -147,26 +164,26 @@ export default function ProductDetail() {
           >
             <div>
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-sm text-gray-400 uppercase tracking-wider">{product.brand}</span>
-                {product.category_id && (
+                <span className="text-sm text-gray-400 uppercase tracking-wider">{safeProduct.brand}</span>
+                {safeProduct.category_id && (
                   <>
                     <span className="text-gray-600">/</span>
                     <button
-                      onClick={() => navigate(`/products?category=${product.category_id}`)}
+                      onClick={() => navigate(`/products?category=${safeProduct.category_id}`)}
                       className="text-sm text-gray-400 hover:text-white transition-colors"
                     >
-                      {product.category_id}
+                      {safeProduct.category_id}
                     </button>
                   </>
                 )}
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{product.name}</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{safeProduct.name}</h1>
               <div className="flex items-center gap-3 mt-3">
                 <div className="flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <svg
                       key={i}
-                      className={`w-4 h-4 ${i < Math.floor(product.rating) ? 'text-yellow-400' : 'text-gray-700'}`}
+                      className={`w-4 h-4 ${i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-700'}`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -175,37 +192,39 @@ export default function ProductDetail() {
                   ))}
                 </div>
                 <span className="text-sm text-gray-400">
-                  {product.rating.toFixed(1)} ({product.review_count} reviews)
+                  {rating.toFixed(1)} ({reviewCount} reviews)
                 </span>
               </div>
             </div>
 
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-white">{formatBDT(product.price)}</span>
-              {product.compare_price && (
-                <span className="text-lg text-gray-500 line-through">{formatBDT(product.compare_price)}</span>
+              <span className="text-3xl font-bold text-white">{formatBDT(price)}</span>
+              {comparePrice > 0 && (
+                <span className="text-lg text-gray-500 line-through">{formatBDT(comparePrice)}</span>
               )}
-              {product.compare_price && (
+              {comparePrice > 0 && (
                 <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-medium rounded-full">
-                  Save {formatBDT(product.compare_price - product.price)}
+                  Save {formatBDT(comparePrice - price)}
                 </span>
               )}
             </div>
 
-            <p className="text-gray-400 leading-relaxed">{product.description}</p>
+            <p className="text-gray-400 leading-relaxed">{safeProduct.description}</p>
 
             {/* Specifications */}
-            <div className="bg-surface-dark dark:bg-surface-dark rounded-2xl border border-gray-800 p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Specifications</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {Object.entries(specs).map(([key, value]) => (
-                  <div key={key}>
-                    <span className="text-xs text-gray-500 uppercase tracking-wider">{key}</span>
-                    <p className="text-sm text-white mt-0.5">{value}</p>
-                  </div>
-                ))}
+            {Object.keys(specs).length > 0 && (
+              <div className="bg-surface-dark dark:bg-surface-dark rounded-2xl border border-gray-800 p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Specifications</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(specs).map(([key, value]) => (
+                    <div key={key}>
+                      <span className="text-xs text-gray-500 uppercase tracking-wider">{key}</span>
+                      <p className="text-sm text-white mt-0.5">{String(value)}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Features */}
             {features.length > 0 && (
@@ -226,10 +245,10 @@ export default function ProductDetail() {
 
             {/* Stock & Add to Cart */}
             <div className="flex items-center gap-4">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${product.stock > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${stock > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                {stock > 0 ? `${stock} in stock` : 'Out of stock'}
               </span>
-              {product.stock > 0 && (
+              {stock > 0 && (
                 <span className="text-sm text-gray-500">Free shipping on orders over ৳5,000</span>
               )}
             </div>
@@ -253,9 +272,9 @@ export default function ProductDetail() {
               </div>
               <button
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={stock === 0}
                 className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${
-                  product.stock === 0
+                  stock === 0
                     ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
                     : addedToCart
                     ? 'bg-green-500 text-black'

@@ -54,14 +54,14 @@ export default function App() {
       try {
         // Add a timeout to the settings fetch so it doesn't hang the app
         const settingsPromise = fetchSiteSettings();
-        const timeoutPromise = new Promise((_, reject) => 
+        const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Timeout')), 3000)
         );
-        
+
         const settings = await Promise.race([settingsPromise, timeoutPromise]);
         setSiteSettings(settings);
-        if (settings?.dark_mode_enabled !== false) {
-          document.documentElement.classList.add('dark');
+        if (settings?.dark_mode_enabled === false) {
+          document.documentElement.classList.remove('dark');
         }
       } catch (err) {
         console.error('Failed to load site settings, using defaults:', err);

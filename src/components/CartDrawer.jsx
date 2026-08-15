@@ -11,14 +11,14 @@ const slideIn = {
 };
 
 export default function CartDrawer({ open, onClose, onCheckoutSuccess, siteSettings, isWishlist = false }) {
-  const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const { cart, addToCart, removeFromCart, updateQuantity, cartTotal } = useCart();
   const { wishlist, removeFromWishlist, moveToCart, wishlistTotal } = useWishlist();
   const navigate = useNavigate();
 
   const items = isWishlist ? wishlist : cart;
   const total = isWishlist ? wishlistTotal : cartTotal;
   const removeItem = isWishlist ? removeFromWishlist : removeFromCart;
-  const moveItem = isWishlist ? moveToCart : null;
+  const moveItem = isWishlist ? (product) => { addToCart(product); removeFromWishlist(product.id); } : null;
 
   if (isWishlist) {
     if (wishlist.length === 0) {

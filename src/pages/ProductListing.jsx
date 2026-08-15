@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../utils/supabaseClient';
 import { useCart } from '../hooks/useCart';
@@ -18,19 +18,33 @@ const staggerContainer = {
   visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
 };
 
+const DEFAULT_PRICE = [0, 250000];
+
 export default function ProductListing() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [selectedBrand, setSelectedBrand] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [priceRange, setPriceRange] = useState([0, 250000]);
+  const [priceRange, setPriceRange] = useState(DEFAULT_PRICE);
   const [sortBy, setSortBy] = useState('price_asc');
+  const [quickFilters, setQuickFilters] = useState([]);
+
+  const toggleQuickFilter = (key) => {
+    setQuickFilters(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
+  };
+
+  // Map of category slug -> id (products store category_id as UUID)
+  const categorySlugToId = {};
+  categories.forEach((c) => { categorySlugToId[c.slug] = c.id; });
 
   useEffect(() => {
     async function loadData() {
@@ -50,6 +64,26 @@ export default function ProductListing() {
     loadData();
   }, []);
 
+  // Sync the ?category=slug URL param to the selected category id
+  useEffect(() => {
+    const categorySlug = searchParams.get('category');
+    if (categorySlug && categorySlugToId[categorySlug]) {
+      setSelectedCategory(categorySlugToId[categorySlug]);
+    } else if (categorySlug) {
+      // Unknown slug (e.g. legacy 'phones') — just clear so we show everything
+      setSelectedCategory('');
+    }
+  }, [searchParams, categories.length]);
+
+  // Keep the URL in sync with the search box
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (searchQuery) params.set('search', searchQuery);
+    else params.delete('search');
+    setSearchParams(params, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
+
   const brands = [...new Set(products.map(p => p.brand))].sort();
 
   const filteredProducts = products
@@ -62,6 +96,20 @@ export default function ProductListing() {
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
       return matchesSearch && matchesBrand && matchesCategory && matchesPrice;
     })
+    // Apply quick filters on top
+    .filter(product => {
+      const specsText = product.specifications
+        ? Object.values(product.specifications).join(' ').toLowerCase()
+        : '';
+      const ramMatch = quickFilters.includes('ram12')
+        ? /\b1[2-9]\s?gb\b|\b[2-9]\d\s?gb\b/.test(specsText) : true;
+      const storageMatch = quickFilters.includes('storage256')
+        ? /\b(25[6-9]|[3-9]\d\d|\d{4,})\s?gb\b/.test(specsText) : true;
+      const fiveG = quickFilters.includes('5g') ? specsText.includes('5g') : true;
+      const inStock = quickFilters.includes('instock') ? (Number(product.stock) || 0) > 0 : true;
+      const isNew = quickFilters.includes('new') ? product.is_featured === true : true;
+      return ramMatch && storageMatch && fiveG && inStock && isNew;
+    })
     .sort((a, b) => {
       switch (sortBy) {
         case 'price_asc': return a.price - b.price;
@@ -72,9 +120,25 @@ export default function ProductListing() {
       }
     });
 
+  const resetFilters = () => {
+    setSelectedCategory('');
+    setSelectedBrand('');
+    setPriceRange(DEFAULT_PRICE);
+    setSearchQuery('');
+    const params = new URLSearchParams(searchParams);
+    params.delete('category');
+    params.delete('search');
+    setSearchParams(params, { replace: true });
+  };
+
   const handleViewDetails = (product) => {
     navigate(`/product/${product.slug}`);
   };
+
+  const hasActiveFilters =
+    !!selectedCategory || !!selectedBrand ||
+    priceRange[0] !== DEFAULT_PRICE[0] || priceRange[1] !== DEFAULT_PRICE[1] ||
+    !!searchQuery;
 
   return (
     <div className="min-h-screen bg-surface-dark dark:bg-surface-dark">
@@ -152,10 +216,20 @@ export default function ProductListing() {
             selectedCategory={selectedCategory}
             selectedBrand={selectedBrand}
             priceRange={priceRange}
-            onCategoryChange={setSelectedCategory}
+            onCategoryChange={(id) => {
+              setSelectedCategory(id);
+              const params = new URLSearchParams(searchParams);
+              const cat = categories.find(c => c.id === id);
+              if (cat) params.set('category', cat.slug);
+              else params.delete('category');
+              setSearchParams(params, { replace: true });
+            }}
             onBrandChange={setSelectedBrand}
             onPriceChange={setPriceRange}
-            onReset={() => { setSelectedCategory(''); setSelectedBrand(''); setPriceRange([0, 250000]); setSearchQuery(''); }}
+            onQuickFilter={toggleQuickFilter}
+            activeQuickFilters={quickFilters}
+            onReset={resetFilters}
+            hasActiveFilters={hasActiveFilters}
           />
 
           {/* Products Grid */}
@@ -188,7 +262,7 @@ export default function ProductListing() {
                 <h3 className="text-xl font-semibold text-white mb-2">No products found</h3>
                 <p className="text-gray-400 mb-6">Try adjusting your filters or search query</p>
                 <button
-                  onClick={() => { setSearchQuery(''); setSelectedCategory(''); setSelectedBrand(''); setPriceRange([0, 250000]); }}
+                  onClick={resetFilters}
                   className="px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   Clear Filters

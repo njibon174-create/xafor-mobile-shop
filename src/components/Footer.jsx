@@ -35,7 +35,7 @@ export default function Footer({ siteSettings }) {
             <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Quick Links</h4>
             <ul className="space-y-2">
               <li><Link to="/products" className="text-gray-400 hover:text-white text-sm transition-colors">All Products</Link></li>
-              <li><Link to="/products?category=phones" className="text-gray-400 hover:text-white text-sm transition-colors">Smartphones</Link></li>
+              <li><Link to="/products?category=smartphones" className="text-gray-400 hover:text-white text-sm transition-colors">Smartphones</Link></li>
               <li><Link to="/products?category=accessories" className="text-gray-400 hover:text-white text-sm transition-colors">Accessories</Link></li>
               <li><Link to="/track-order" className="text-gray-400 hover:text-white text-sm transition-colors">Track Order</Link></li>
             </ul>

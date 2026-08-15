@@ -15,7 +15,10 @@ export default function Sidebar({
   onCategoryChange,
   onBrandChange,
   onPriceChange,
+  onQuickFilter,
+  activeQuickFilters = [],
   onReset,
+  hasActiveFilters = false,
 }) {
   return (
     <motion.aside
@@ -26,7 +29,7 @@ export default function Sidebar({
     >
       <div className="bg-surface-dark dark:bg-surface-dark rounded-2xl border border-gray-800 p-5 space-y-6">
         {/* Reset */}
-        {selectedCategory || selectedBrand || priceRange[0] !== 0 || (
+        {hasActiveFilters && (
           <button
             onClick={onReset}
             className="text-sm text-gray-400 hover:text-white transition-colors"
@@ -95,26 +98,35 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Specs - Functional filters */}
+        {/* Quick Filters - Functional */}
         <div>
           <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">Quick Filters</h3>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { label: '5G Phones', action: () => {} },
-              { label: '12GB+ RAM', action: () => {} },
-              { label: '256GB+ Storage', action: () => {} },
-              { label: 'Under 50K', action: () => {} },
-              { label: 'In Stock', action: () => {} },
-              { label: 'New Arrivals', action: () => {} },
-            ].map((filter, i) => (
-              <button
-                key={i}
-                onClick={filter.action}
-                className="px-3 py-2 text-xs text-gray-400 bg-gray-800/50 rounded-lg hover:bg-gray-800 hover:text-white transition-all border border-gray-800/50"
-              >
-                {filter.label}
-              </button>
-            ))}
+              { key: '5g', label: '5G Phones' },
+              { key: 'ram12', label: '12GB+ RAM' },
+              { key: 'storage256', label: '256GB+ Storage' },
+              { key: 'under50k', label: 'Under 50K', min: 0, max: 50000 },
+              { key: 'instock', label: 'In Stock' },
+              { key: 'new', label: 'New Arrivals' },
+            ].map((filter) => {
+              const active = activeQuickFilters.includes(filter.key);
+              return (
+                <button
+                  key={filter.key}
+                  onClick={() => {
+                    if (filter.min !== undefined) {
+                      onPriceChange([filter.min, filter.max]);
+                    } else {
+                      onQuickFilter(filter.key);
+                    }
+                  }}
+                  className={`px-3 py-2 text-xs rounded-lg transition-all border ${active ? 'bg-white text-black border-white' : 'bg-gray-800/50 text-gray-400 border-gray-800/50 hover:bg-gray-800 hover:text-white'}`}
+                >
+                  {filter.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTheme } from '../context/ThemeContext';
 
 const fadeIn = {
   hidden: { opacity: 0 },
@@ -9,11 +11,13 @@ const fadeIn = {
 export default function Navbar({ onCartClick, onWishlistClick, siteSettings }) {
   const siteName = siteSettings?.site_name || 'Xafor Mobile Shop';
   const [searchValue, setSearchValue] = useState('');
+  const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchValue.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(searchValue.trim())}`;
+      navigate(`/products?search=${encodeURIComponent(searchValue.trim())}`);
     }
   };
 
@@ -27,14 +31,17 @@ export default function Navbar({ onCartClick, onWishlistClick, siteSettings }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-3"
+          >
             <div className="w-9 h-9 bg-white flex items-center justify-center rounded-lg">
               <svg className="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
               </svg>
             </div>
             <span className="text-lg font-semibold text-white tracking-tight">{siteName}</span>
-          </div>
+          </button>
 
           {/* Search (desktop) */}
           <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 max-w-md mx-8">
@@ -77,10 +84,21 @@ export default function Navbar({ onCartClick, onWishlistClick, siteSettings }) {
             </button>
 
             {/* Theme toggle */}
-            <button className="p-2.5 rounded-lg hover:bg-gray-800 transition-colors" title="Toggle theme">
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
+            <button
+              onClick={toggleTheme}
+              className="p-2.5 rounded-lg hover:bg-gray-800 transition-colors"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? (
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              )}
             </button>
 
             {/* Hamburger (mobile) */}

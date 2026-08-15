@@ -265,7 +265,7 @@ export default function Home({ siteSettings }) {
                 onClick={() => {
                   const url = new URL('/products', window.location.origin);
                   url.searchParams.set('category', cat.slug);
-                  window.location.href = url.pathname + url.search;
+                  navigate(`/products?category=${cat.slug}`);
                 }}
               >
                 {cat.image_url && (
