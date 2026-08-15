@@ -104,8 +104,8 @@ export default function Home({ siteSettings }) {
           </div>
         </motion.div>
         {/* Decorative background elements */}
-        <div className="absolute top-20 right-0 w-96 h-96 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-gradient-to-tr from-white/3 to-transparent rounded-full blur-3xl" />
+        <div className="absolute top-20 right-0 w-96 h-96 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-gradient-to-tr from-white/3 to-transparent rounded-full blur-3xl pointer-events-none" />
       </section>
 
       {/* Features bar */}

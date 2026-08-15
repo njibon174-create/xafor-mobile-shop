@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
+import { supabase } from '../utils/supabaseClient';
 
 const fadeIn = {
   hidden: { opacity: 0 },
@@ -9,10 +10,22 @@ const fadeIn = {
 };
 
 export default function Navbar({ onCartClick, onWishlistClick, siteSettings }) {
-  const siteName = siteSettings?.site_name || 'Xafor Mobile Shop';
-  const [searchValue, setSearchValue] = useState('');
-  const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
+  const [brands, setBrands] = useState([]);
+  const [brandOpen, setBrandOpen] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    supabase
+      .from('products')
+      .select('brand')
+      .eq('is_active', true)
+      .then(({ data }) => {
+        if (!isMounted || !data) return;
+        const unique = [...new Set(data.map(d => d.brand))].sort();
+        setBrands(unique);
+      });
+    return () => { isMounted = false; };
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -42,6 +55,33 @@ export default function Navbar({ onCartClick, onWishlistClick, siteSettings }) {
             </div>
             <span className="text-lg font-semibold text-white tracking-tight">{siteName}</span>
           </button>
+
+          {/* Brands dropdown (desktop) */}
+          <div className="hidden lg:block relative" onMouseLeave={() => setBrandOpen(false)}>
+            <button
+              onClick={() => setBrandOpen(o => !o)}
+              onMouseEnter={() => setBrandOpen(true)}
+              className="flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              Brands
+              <svg className={`w-4 h-4 transition-transform ${brandOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {brandOpen && brands.length > 0 && (
+              <div className="absolute left-0 top-full mt-2 w-48 bg-surface-dark dark:bg-surface-dark border border-gray-800 rounded-xl p-2 shadow-2xl z-50">
+                {brands.map(b => (
+                  <button
+                    key={b}
+                    onClick={() => { setBrandOpen(false); navigate(`/brand/${b}`); }}
+                    className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                  >
+                    {b}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Search (desktop) */}
           <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 max-w-md mx-8">

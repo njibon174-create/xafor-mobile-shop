@@ -122,6 +122,9 @@ export default function CartDrawer({ open, onClose, onCheckoutSuccess, siteSetti
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-medium text-white truncate">{item.name}</h3>
                         <p className="text-sm text-gray-400 mt-0.5">৳{item.price.toLocaleString('bn-BD')}</p>
+                        {item.variant && (
+                          <p className="text-xs text-gray-500 mt-0.5">{item.variant}</p>
+                        )}
                         <div className="flex items-center gap-2 mt-3">
                           <button
                             onClick={() => {

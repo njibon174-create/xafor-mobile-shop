@@ -5,6 +5,7 @@ import { supabase } from '../utils/supabaseClient';
 import { useCart } from '../hooks/useCart';
 import { formatBDT, getDeliveryCharge, BANGLADESH_DIVISIONS } from '../utils/helpers';
 import ProductCard from '../components/ProductCard';
+import { getVariantOptions } from '../utils/variants';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -21,6 +22,10 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const variantOptions = getVariantOptions(product);
+  const [selectedColor, setSelectedColor] = useState(variantOptions.color[0] || null);
+  const [selectedRam, setSelectedRam] = useState(variantOptions.ram[0] || null);
+  const [selectedStorage, setSelectedStorage] = useState(variantOptions.storage[0] || null);
 
   useEffect(() => {
     let isMounted = true;
@@ -53,7 +58,10 @@ export default function ProductDetail() {
 
   const handleAddToCart = () => {
     if (product) {
-      addToCart(product, quantity);
+      const variant = [selectedColor, selectedRam, selectedStorage]
+        .filter(Boolean)
+        .join(' · ');
+      addToCart({ ...product, variant }, quantity);
       setAddedToCart(true);
       setTimeout(() => setAddedToCart(false), 2000);
     }
@@ -163,38 +171,7 @@ export default function ProductDetail() {
             className="space-y-6"
           >
             <div>
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-sm text-gray-400 uppercase tracking-wider">{safeProduct.brand}</span>
-                {safeProduct.category_id && (
-                  <>
-                    <span className="text-gray-600">/</span>
-                    <button
-                      onClick={() => navigate(`/products?category=${safeProduct.category_id}`)}
-                      className="text-sm text-gray-400 hover:text-white transition-colors"
-                    >
-                      {safeProduct.category_id}
-                    </button>
-                  </>
-                )}
-              </div>
               <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{safeProduct.name}</h1>
-              <div className="flex items-center gap-3 mt-3">
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <svg
-                      key={i}
-                      className={`w-4 h-4 ${i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-700'}`}
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <span className="text-sm text-gray-400">
-                  {rating.toFixed(1)} ({reviewCount} reviews)
-                </span>
-              </div>
             </div>
 
             <div className="flex items-baseline gap-3">
@@ -240,6 +217,60 @@ export default function ProductDetail() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Variant selectors (Color / RAM / Storage) */}
+            {(variantOptions.color.length > 0 || variantOptions.ram.length > 0 || variantOptions.storage.length > 0) && (
+              <div className="space-y-4 pt-2">
+                {variantOptions.color.length > 0 && (
+                  <div>
+                    <p className="text-sm text-gray-400 mb-2">Color: <span className="text-white">{selectedColor}</span></p>
+                    <div className="flex flex-wrap gap-2">
+                      {variantOptions.color.map(c => (
+                        <button
+                          key={c}
+                          onClick={() => setSelectedColor(c)}
+                          className={`px-3 py-2 rounded-lg text-sm border transition-all ${selectedColor === c ? 'bg-white text-black border-white' : 'bg-gray-800/50 text-gray-300 border-gray-800 hover:border-gray-600'}`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {variantOptions.ram.length > 0 && (
+                  <div>
+                    <p className="text-sm text-gray-400 mb-2">RAM</p>
+                    <div className="flex flex-wrap gap-2">
+                      {variantOptions.ram.map(r => (
+                        <button
+                          key={r}
+                          onClick={() => setSelectedRam(r)}
+                          className={`px-3 py-2 rounded-lg text-sm border transition-all ${selectedRam === r ? 'bg-white text-black border-white' : 'bg-gray-800/50 text-gray-300 border-gray-800 hover:border-gray-600'}`}
+                        >
+                          {r}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {variantOptions.storage.length > 0 && (
+                  <div>
+                    <p className="text-sm text-gray-400 mb-2">Storage</p>
+                    <div className="flex flex-wrap gap-2">
+                      {variantOptions.storage.map(s => (
+                        <button
+                          key={s}
+                          onClick={() => setSelectedStorage(s)}
+                          className={`px-3 py-2 rounded-lg text-sm border transition-all ${selectedStorage === s ? 'bg-white text-black border-white' : 'bg-gray-800/50 text-gray-300 border-gray-800 hover:border-gray-600'}`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

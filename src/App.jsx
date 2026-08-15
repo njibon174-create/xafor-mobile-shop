@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import Home from './pages/Home';
 import ProductListing from './pages/ProductListing';
 import ProductDetail from './pages/ProductDetail';
+import BrandPage from './pages/BrandPage';
 import CartPage from './pages/CartPage';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
@@ -120,6 +121,14 @@ export default function App() {
               element={
                 <AnimatedPage>
                   <ProductDetail />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/brand/:slug"
+              element={
+                <AnimatedPage>
+                  <BrandPage />
                 </AnimatedPage>
               }
             />

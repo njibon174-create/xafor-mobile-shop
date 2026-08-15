@@ -55,6 +55,9 @@ export default function CartPage() {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg font-medium text-white truncate">{item.name}</h3>
                   <p className="text-sm text-gray-400 mt-1">৳{item.price.toLocaleString('bn-BD')} each</p>
+                  {item.variant && (
+                    <p className="text-xs text-gray-500 mt-1">{item.variant}</p>
+                  )}
                   <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center border border-gray-700 rounded-lg">
                       <button
