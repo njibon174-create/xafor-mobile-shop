@@ -1,16 +1,45 @@
-# React + Vite
+# Xafor Mobile Shop E-Commerce Platform
+A premium, minimal e-commerce website for mobile phones and accessories in Bangladesh.
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+## Tech Stack
+- React 19 + Vite
+- Tailwind CSS v4 (dark mode enabled)
+- Framer Motion (animations)
+- Supabase (PostgreSQL backend)
+- Vercel (deployment)
 
-Currently, two official plugins are available:
+## Features
+- Product browsing with filters (brand, price, category)
+- Shopping cart with localStorage persistence
+- Wishlist functionality
+- Guest checkout (COD only)
+- Order tracking via Tracking ID (XAF-YYYYMMDD-XXX)
+- Home delivery (80 TK Dhaka / 120 TK outside) or shop pickup (free)
+- Dark mode default with light mode toggle
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Setup
 
-## React Compiler
+```bash
+# Install dependencies
+npm install
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+# Development
+npm run dev
 
-## Expanding the Oxlint configuration
+# Build
+npm run build
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Environment Variables
+Create `.env.local`:
+```
+VITE_SUPABASE_URL=https://ymjjpfmgvbyfamnxluep.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_Q0CVt8f4amDRM5bGLT_cgA_IE5VbufX
+```
+
+## Database
+Run `supabase-schema.sql` in your Supabase SQL Editor to set up tables and seed data.
+
+## Deployment
+- GitHub: https://github.com/njibon174-create/xafor-mobile-shop
+- Vercel: Connect repo at vercel.com, add env vars, auto-deploy on push
