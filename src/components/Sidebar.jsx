@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const slideIn = {
@@ -24,17 +25,23 @@ export default function Sidebar({
       className="w-64 flex-shrink-0"
     >
       <div className="bg-surface-dark dark:bg-surface-dark rounded-2xl border border-gray-800 p-5 space-y-6">
+        {/* Reset */}
+        {selectedCategory || selectedBrand || priceRange[0] !== 0 || (
+          <button
+            onClick={onReset}
+            className="text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            Clear all filters
+          </button>
+        )}
+
         {/* Categories */}
         <div>
           <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">Category</h3>
           <div className="space-y-1">
             <button
               onClick={() => onCategoryChange('')}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-                !selectedCategory
-                  ? 'bg-white text-black'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
-              }`}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${!selectedCategory ? 'bg-white text-black' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}
             >
               All Categories
             </button>
@@ -42,11 +49,7 @@ export default function Sidebar({
               <button
                 key={cat.id}
                 onClick={() => onCategoryChange(cat.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-                  selectedCategory === cat.id
-                    ? 'bg-white text-black'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                }`}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${selectedCategory === cat.id ? 'bg-white text-black' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}
               >
                 {cat.name}
               </button>
@@ -62,11 +65,7 @@ export default function Sidebar({
               <button
                 key={brand}
                 onClick={() => onBrandChange(brand)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  selectedBrand === brand
-                    ? 'bg-white text-black'
-                    : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'
-                }`}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedBrand === brand ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'}`}
               >
                 {brand}
               </button>
@@ -88,11 +87,7 @@ export default function Sidebar({
               <button
                 key={i}
                 onClick={() => onPriceChange([option.min, option.max])}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-                  priceRange[0] === option.min && priceRange[1] === option.max
-                    ? 'bg-white text-black'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                }`}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${priceRange[0] === option.min && priceRange[1] === option.max ? 'bg-white text-black' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}
               >
                 {option.label}
               </button>
@@ -100,7 +95,7 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Specs */}
+        {/* Specs - Functional filters */}
         <div>
           <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">Quick Filters</h3>
           <div className="grid grid-cols-2 gap-2">
@@ -109,6 +104,8 @@ export default function Sidebar({
               { label: '12GB+ RAM', action: () => {} },
               { label: '256GB+ Storage', action: () => {} },
               { label: 'Under 50K', action: () => {} },
+              { label: 'In Stock', action: () => {} },
+              { label: 'New Arrivals', action: () => {} },
             ].map((filter, i) => (
               <button
                 key={i}

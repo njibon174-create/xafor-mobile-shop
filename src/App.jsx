@@ -15,6 +15,7 @@ import CartPage from './pages/CartPage';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
 import TrackOrder from './pages/TrackOrder';
+import WishlistPage from './pages/WishlistPage';
 
 const pageVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -26,11 +27,25 @@ const pageVariants = {
   exit: { opacity: 0, transition: { duration: 0.15 } },
 };
 
+function AnimatedPage({ children }) {
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export default function App() {
   const [siteSettings, setSiteSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const { clearCart } = useCart();
   const [cartOpen, setCartOpen] = useState(false);
+  const [wishlistOpen, setWishlistOpen] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -68,7 +83,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-surface-dark dark:bg-surface-dark text-white">
-      <Navbar onCartClick={() => setCartOpen(true)} siteSettings={siteSettings} />
+      <Navbar
+        onCartClick={() => setCartOpen(true)}
+        onWishlistClick={() => setWishlistOpen(true)}
+        siteSettings={siteSettings}
+      />
       <main>
         <AnimatePresence mode="wait">
           <Routes>
@@ -128,30 +147,33 @@ export default function App() {
                 </AnimatedPage>
               }
             />
+            <Route
+              path="/wishlist"
+              element={
+                <AnimatedPage>
+                  <WishlistPage />
+                </AnimatedPage>
+              }
+            />
           </Routes>
         </AnimatePresence>
       </main>
       <Footer siteSettings={siteSettings} />
+
       <CartDrawer
         open={cartOpen}
         onClose={() => setCartOpen(false)}
         onCheckoutSuccess={handleCheckoutSuccess}
         siteSettings={siteSettings}
       />
-    </div>
-  );
-}
 
-function AnimatedPage({ children }) {
-  return (
-    <motion.div
-      variants={pageVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-    >
-      {children}
-    </motion.div>
+      <CartDrawer
+        open={wishlistOpen}
+        onClose={() => setWishlistOpen(false)}
+        isWishlist
+        onCheckoutSuccess={() => {}}
+        siteSettings={siteSettings}
+      />
+    </div>
   );
 }

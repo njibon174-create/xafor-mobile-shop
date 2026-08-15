@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useCart } from '../hooks/useCart';
-import { generateTrackingId, getDeliveryCharge, formatBDT, BANGLADESH_DIVISIONS } from '../utils/helpers';
-import { supabase } from '../utils/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../utils/supabaseClient';
+import { useCart } from '../hooks/useCart';
+import { generateTrackingId, getDeliveryCharge, formatBDT, BANGLADESH_DIVISIONS } from '../utils/helpers';
+import { useWishlist } from '../hooks/useWishlist';
 
 const slideUp = {
   hidden: { opacity: 0, y: 20 },
@@ -16,7 +17,10 @@ const shake = {
 
 export default function Checkout({ onSuccess }) {
   const { cart, cartTotal, clearCart } = useCart();
+  const { addToWishlist } = useWishlist();
   const navigate = useNavigate();
+
+  const [activeTab, setActiveTab] = useState('form');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -85,12 +89,27 @@ export default function Checkout({ onSuccess }) {
 
       clearCart();
       if (onSuccess) onSuccess();
-      navigate('/order-success', { state: { trackingId, order: { ...formData, deliveryCharge, cartTotal, grandTotal, items: orderItems } } });
+
+      const orderData = {
+        ...formData,
+        deliveryCharge,
+        cartTotal,
+        grandTotal,
+        items: orderItems,
+        trackingId,
+      };
+      navigate('/order-success', { state: orderData });
     } catch (err) {
       console.error('Order error:', err);
       setSubmitError('Failed to place order. Please try again.');
       setSubmitting(false);
     }
+  };
+
+  const handleSaveForLater = (e) => {
+    e.preventDefault();
+    cart.forEach(item => addToWishlist(item));
+    navigate('/wishlist');
   };
 
   if (cart.length === 0) {
@@ -198,7 +217,7 @@ export default function Checkout({ onSuccess }) {
                 <div className="grid sm:grid-cols-2 gap-3">
                   <label className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.deliveryType === 'delivery' ? 'border-white bg-white/5' : 'border-gray-800 hover:border-gray-700'}`}>
                     <input type="radio" name="deliveryType" value="delivery" checked={formData.deliveryType === 'delivery'} onChange={e => setFormData({ ...formData, deliveryType: 'delivery' })} className="sr-only" />
-                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center {formData.deliveryType === 'delivery' ? 'border-white' : 'border-gray-600'}">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.deliveryType === 'delivery' ? 'border-white' : 'border-gray-600'}`}>
                       {formData.deliveryType === 'delivery' && <div className="w-2 h-2 rounded-full bg-white" />}
                     </div>
                     <div>
@@ -208,7 +227,7 @@ export default function Checkout({ onSuccess }) {
                   </label>
                   <label className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.deliveryType === 'pickup' ? 'border-white bg-white/5' : 'border-gray-800 hover:border-gray-700'}`}>
                     <input type="radio" name="deliveryType" value="pickup" checked={formData.deliveryType === 'pickup'} onChange={e => setFormData({ ...formData, deliveryType: 'pickup' })} className="sr-only" />
-                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center {formData.deliveryType === 'pickup' ? 'border-white' : 'border-gray-600'}">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.deliveryType === 'pickup' ? 'border-white' : 'border-gray-600'}`}>
                       {formData.deliveryType === 'pickup' && <div className="w-2 h-2 rounded-full bg-white" />}
                     </div>
                     <div>
@@ -245,13 +264,7 @@ export default function Checkout({ onSuccess }) {
             <button
               type="submit"
               disabled={submitting}
-              className={`w-full py-3.5 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2 ${
-                submitting
-                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : submitError
-                  ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                  : 'bg-white text-black hover:bg-gray-100'
-              }`}
+              className={`w-full py-3.5 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2 ${submitting ? 'bg-gray-700 text-gray-400 cursor-not-allowed' : submitError ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white text-black hover:bg-gray-100'}`}
             >
               {submitting ? (
                 <>
@@ -269,6 +282,22 @@ export default function Checkout({ onSuccess }) {
                 </>
               )}
             </button>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleSaveForLater}
+                className="flex-1 py-3 border border-gray-700 text-gray-300 font-medium rounded-xl hover:border-white hover:text-white transition-colors text-center"
+              >
+                Save for Later
+              </button>
+              <a
+                href="/cart"
+                className="py-3 px-4 border border-gray-700 text-gray-300 rounded-xl hover:border-white hover:text-white transition-colors text-center"
+              >
+                Edit Cart
+              </a>
+            </div>
 
             <p className="text-center text-xs text-gray-600">
               By placing this order, you agree to pay <span className="text-white">{formatBDT(grandTotal)}</span> in cash upon delivery.

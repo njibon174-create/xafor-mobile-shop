@@ -5,8 +5,16 @@ const fadeIn = {
   visible: { opacity: 1, transition: { duration: 0.3 } },
 };
 
-export default function Navbar({ onCartClick, siteSettings }) {
+export default function Navbar({ onCartClick, onWishlistClick, siteSettings }) {
   const siteName = siteSettings?.site_name || 'Xafor Mobile Shop';
+  const [searchValue, setSearchValue] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchValue.trim()) {
+      window.location.href = `/products?search=${encodeURIComponent(searchValue.trim())}`;
+    }
+  };
 
   return (
     <motion.nav
@@ -28,30 +36,29 @@ export default function Navbar({ onCartClick, siteSettings }) {
           </div>
 
           {/* Search (desktop) */}
-          <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
+          <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 max-w-md mx-8">
             <div className="relative w-full">
               <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
                 type="text"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
                 placeholder="Search phones, accessories..."
                 className="w-full pl-12 pr-4 py-2 bg-gray-900/80 border border-gray-800 rounded-xl text-sm text-white placeholder-gray-500 focus:border-white focus:ring-1 focus:ring-white/20 outline-none transition-all"
               />
             </div>
-          </div>
+          </form>
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            {/* Theme toggle */}
-            <button className="p-2.5 rounded-lg hover:bg-gray-800 transition-colors" title="Toggle theme">
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            </button>
-
             {/* Wishlist */}
-            <button className="p-2.5 rounded-lg hover:bg-gray-800 transition-colors relative">
+            <button
+              onClick={onWishlistClick}
+              className="p-2.5 rounded-lg hover:bg-gray-800 transition-colors relative"
+              title="Wishlist"
+            >
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
@@ -61,9 +68,17 @@ export default function Navbar({ onCartClick, siteSettings }) {
             <button
               onClick={onCartClick}
               className="p-2.5 rounded-lg hover:bg-gray-800 transition-colors relative"
+              title="Cart"
             >
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+            </button>
+
+            {/* Theme toggle */}
+            <button className="p-2.5 rounded-lg hover:bg-gray-800 transition-colors" title="Toggle theme">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
               </svg>
             </button>
 
@@ -77,18 +92,20 @@ export default function Navbar({ onCartClick, siteSettings }) {
         </div>
 
         {/* Mobile search */}
-        <div className="md:hidden pb-3">
+        <form onSubmit={handleSearch} className="md:hidden pb-3">
           <div className="relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
               type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               placeholder="Search products..."
               className="w-full pl-10 pr-4 py-2 bg-gray-900/80 border border-gray-800 rounded-xl text-sm text-white placeholder-gray-500 focus:border-white focus:ring-1 focus:ring-white/20 outline-none transition-all"
             />
           </div>
-        </div>
+        </form>
       </div>
     </motion.nav>
   );

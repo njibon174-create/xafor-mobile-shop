@@ -11,7 +11,21 @@ export default function ProductCard({ product, addToCart, onViewDetails }) {
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
+    if (addToCart) {
+      addToCart(product);
+      // Visual feedback
+      const btn = e.currentTarget;
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = `
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>`;
+      btn.classList.add('bg-green-500', 'text-white');
+      setTimeout(() => {
+        btn.innerHTML = originalHtml;
+        btn.classList.remove('bg-green-500', 'text-white');
+      }, 1200);
+    }
   };
 
   return (
@@ -92,7 +106,8 @@ export default function ProductCard({ product, addToCart, onViewDetails }) {
         <button
           onClick={(e) => {
             e.preventDefault();
-            onViewDetails();
+            e.stopPropagation();
+            if (onViewDetails) onViewDetails(product);
           }}
           className="mt-3 w-full py-2 text-sm text-gray-400 hover:text-white transition-colors border border-gray-800 hover:border-white rounded-lg"
         >
