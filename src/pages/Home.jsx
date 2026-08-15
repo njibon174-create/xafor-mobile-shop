@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../utils/supabaseClient';
-import { useCart } from '../hooks/useCart';
+import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
 
 const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
@@ -49,7 +49,7 @@ export default function Home({ siteSettings }) {
     <div className="min-h-screen bg-surface-dark dark:bg-surface-dark">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

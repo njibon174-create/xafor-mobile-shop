@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../utils/supabaseClient';
-import { useCart } from '../hooks/useCart';
+import { useCart } from '../context/CartContext';
 import { useWishlist } from '../hooks/useWishlist';
 import ProductCard from '../components/ProductCard';
 import Sidebar from '../components/Sidebar';

@@ -4,7 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
-import { useCart } from './hooks/useCart';
+import { useCart } from './context/CartContext';
 import { fetchSiteSettings } from './utils/supabaseClient';
 import { motion } from 'framer-motion';
 

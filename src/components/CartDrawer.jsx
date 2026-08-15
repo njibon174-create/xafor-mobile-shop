@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCart } from '../hooks/useCart';
+import { useCart } from '../context/CartContext';
 import { useWishlist } from '../hooks/useWishlist';
 import { formatBDT } from '../utils/helpers';
 

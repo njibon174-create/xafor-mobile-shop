@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
+const CartContext = createContext(null);
 const CART_KEY = 'xafor_cart';
 
-export function useCart() {
+export function CartProvider({ children }) {
   const [cart, setCart] = useState(() => {
     try {
       const stored = localStorage.getItem(CART_KEY);
@@ -50,13 +51,19 @@ export function useCart() {
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0);
 
-  return {
-    cart,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
-    clearCart,
-    cartTotal,
-    cartCount,
-  };
+  return (
+    <CartContext.Provider
+      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
+}
+
+export function useCart() {
+  const ctx = useContext(CartContext);
+  if (!ctx) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return ctx;
 }

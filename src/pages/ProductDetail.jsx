@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../utils/supabaseClient';
-import { useCart } from '../hooks/useCart';
+import { useCart } from '../context/CartContext';
 import { formatBDT, getDeliveryCharge, BANGLADESH_DIVISIONS } from '../utils/helpers';
 import ProductCard from '../components/ProductCard';
 import { getVariantOptions } from '../utils/variants';

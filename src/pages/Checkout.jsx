@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabaseClient';
-import { useCart } from '../hooks/useCart';
+import { useCart } from '../context/CartContext';
 import { generateTrackingId, getDeliveryCharge, formatBDT, BANGLADESH_DIVISIONS } from '../utils/helpers';
 import { useWishlist } from '../hooks/useWishlist';
 
