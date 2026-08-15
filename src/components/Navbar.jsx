@@ -10,8 +10,11 @@ const fadeIn = {
 };
 
 export default function Navbar({ onCartClick, onWishlistClick, siteSettings }) {
+  const { theme, toggleTheme } = useTheme();
   const [brands, setBrands] = useState([]);
   const [brandOpen, setBrandOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const siteName = siteSettings?.site_name || 'Xafor Mobile Shop';
 
   useEffect(() => {
     let isMounted = true;
